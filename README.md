@@ -42,7 +42,7 @@ Backend running at http://127.0.0.1:8000
 Installation
 
 Clone the Repository:
-git clone https://github.com/yourusername/studhome.git
+git clone https://github.com/chewi-clinton/studhome-flutter-frontend
 cd studhome/Frontend
 
 Install Dependencies:
