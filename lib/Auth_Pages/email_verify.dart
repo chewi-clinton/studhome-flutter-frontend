@@ -1,11 +1,13 @@
-import 'package:email_otp/email_otp.dart';
+import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:flutter_otp_text_field/flutter_otp_text_field.dart';
 import 'package:http/http.dart' as http;
-import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_otp_text_field/flutter_otp_text_field.dart';
 import 'package:studhome/Pages/navigation.dart';
 import 'package:studhome/constants/app_colors.dart';
 import 'package:studhome/constants/backend_url.dart';
+import 'package:email_otp/email_otp.dart';
+import 'dart:convert';
 
 class EmailVerificationPage extends StatefulWidget {
   final String email;
@@ -65,7 +67,7 @@ class _EmailVerificationPageState extends State<EmailVerificationPage> {
       if (!mounted) return;
       setState(() {
         _isLoading = false;
-        _errorMessage = 'Error: $e';
+        _errorMessage = 'Error sending OTP: $e';
       });
     }
   }
@@ -79,39 +81,79 @@ class _EmailVerificationPageState extends State<EmailVerificationPage> {
       bool result = EmailOTP.verifyOTP(otp: otp);
       if (!mounted) return;
       if (result) {
-        final url = Uri.parse('${Constants.baseUrl}/api/user/register/');
-        final response = await http.post(
-          url,
-          headers: {'Content-Type': 'application/json'},
-          body: jsonEncode(widget.userData),
-        );
+        final url = Uri.parse(
+          '${Constants.baseUrl}/api/user/register/',
+        ); // Updated endpoint
+        final response = await http
+            .post(
+              url,
+              headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+              },
+              body: jsonEncode(widget.userData),
+            )
+            .timeout(const Duration(seconds: 30));
+
+        if (!mounted) return;
+
+        print('Raw response body: ${response.body}'); // Debug raw response
+        print('Status code: ${response.statusCode}'); // Debug status code
 
         if (response.statusCode == 201) {
-          if (mounted) {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => const Navigation()),
-            );
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Registration successful!')),
-            );
+          try {
+            final data = jsonDecode(response.body);
+            if (data.containsKey('access') && data.containsKey('refresh')) {
+              final prefs = await SharedPreferences.getInstance();
+              await prefs.setString('access_token', data['access']);
+              await prefs.setString('refresh_token', data['refresh']);
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => const Navigation()),
+              );
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Registration successful!')),
+              );
+            } else {
+              setState(() {
+                _isLoading = false;
+                _errorMessage =
+                    'Registration failed: Missing access or refresh token in response. Response: ${response.body}';
+              });
+            }
+          } catch (e) {
+            setState(() {
+              _isLoading = false;
+              _errorMessage =
+                  'Registration failed: Invalid response format. Error: $e, Response: ${response.body}';
+            });
           }
         } else {
-          final errorData = jsonDecode(response.body);
-          String errorMsg = 'Registration failed: ';
-          if (errorData.containsKey('username')) {
-            errorMsg += errorData['username'].join(' ');
-          } else if (errorData.containsKey('email')) {
-            errorMsg += errorData['email'].join(' ');
-          } else if (errorData.containsKey('phone_number')) {
-            errorMsg += errorData['phone_number'].join(' ');
-          } else {
-            errorMsg += 'Unknown error.';
+          try {
+            final errorData = jsonDecode(response.body);
+            String errorMsg = 'Registration failed: ';
+            if (errorData.containsKey('username')) {
+              errorMsg += errorData['username'].join(' ');
+            } else if (errorData.containsKey('email')) {
+              errorMsg += errorData['email'].join(' ');
+            } else if (errorData.containsKey('phone_number')) {
+              errorMsg += errorData['phone_number'].join(' ');
+            } else {
+              errorMsg +=
+                  errorData['detail'] ??
+                  'Unknown error: ${response.statusCode}';
+            }
+            setState(() {
+              _isLoading = false;
+              _errorMessage = errorMsg;
+            });
+          } catch (e) {
+            setState(() {
+              _isLoading = false;
+              _errorMessage =
+                  'Registration failed: Invalid response format. Error: $e, Response: ${response.body}';
+            });
           }
-          setState(() {
-            _isLoading = false;
-            _errorMessage = errorMsg;
-          });
         }
       } else {
         setState(() {
@@ -123,7 +165,7 @@ class _EmailVerificationPageState extends State<EmailVerificationPage> {
       if (!mounted) return;
       setState(() {
         _isLoading = false;
-        _errorMessage = 'Error: $e';
+        _errorMessage = 'Error during registration: $e';
       });
     }
   }

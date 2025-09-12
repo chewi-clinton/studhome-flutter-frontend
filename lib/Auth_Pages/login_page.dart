@@ -103,6 +103,7 @@ class LoginpageState extends State<Loginpage> {
 
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         backgroundColor: bgColor,
         iconTheme: IconThemeData(color: textColor),
         elevation: 0,

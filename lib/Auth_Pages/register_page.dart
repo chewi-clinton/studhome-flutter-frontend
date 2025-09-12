@@ -81,6 +81,7 @@ class _RegistrationpageState extends State<Registrationpage> {
 
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         backgroundColor: bgColor,
         iconTheme: IconThemeData(color: textColor),
         elevation: 0,

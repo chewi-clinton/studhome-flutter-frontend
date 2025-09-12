@@ -344,7 +344,6 @@ class _SettingState extends State<Setting> {
               ),
               const SizedBox(height: 15),
 
-              // FAQs
               Row(
                 children: [
                   Text(
@@ -382,7 +381,6 @@ class _SettingState extends State<Setting> {
               ),
               const SizedBox(height: 15),
 
-              // About App (Dropdown)
               ExpansionTile(
                 title: Text(
                   "About Our App",
@@ -391,15 +389,77 @@ class _SettingState extends State<Setting> {
                 children: [
                   Padding(
                     padding: const EdgeInsets.all(16.0),
-                    child: Text(
-                      "This application is designed to provide users with a seamless experience in managing their settings and preferences. Our goal is to make it easy for users to customize their experience.",
-                      style: TextStyle(fontSize: 16, color: textColor),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          "Studhome is a student housing platform designed specifically for students of the ICT University in Yaoundé, Cameroon. The app addresses the critical challenge students face when searching for safe, affordable, and convenient housing near campus. Unlike traditional methods of house hunting that involve word-of-mouth, unreliable listings, or physically walking around neighborhoods, Studhome offers a digital-first solution that saves time, reduces stress, and ensures fairness.",
+                          style: TextStyle(fontSize: 16, color: textColor),
+                        ),
+                        SizedBox(height: 16),
+                        Text(
+                          "Purpose",
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: textColor,
+                          ),
+                        ),
+                        SizedBox(height: 8),
+                        Text(
+                          "The app provides a centralized platform where students can:\n"
+                          "• Browse available houses in both 2D images and interactive 3D models.\n"
+                          "• View clear descriptions, prices, and distances from the university.\n"
+                          "• Reserve homes digitally, valid for 7 days, ensuring equal opportunity.\n"
+                          "• Book property tours by making secure payments via MTN Mobile Money or Orange Money, valid for 2 days.\n"
+                          "• Save favorite houses for future reference.\n"
+                          "• Access directions via integrated maps to easily locate properties.",
+                          style: TextStyle(fontSize: 16, color: textColor),
+                        ),
+                        SizedBox(height: 16),
+                        Text(
+                          "Target Audience",
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: textColor,
+                          ),
+                        ),
+                        SizedBox(height: 8),
+                        Text(
+                          "• Students: Looking for safe, affordable, and verified housing close to ICT University.\n"
+                          "• University Community: Contributing to better student welfare by reducing accommodation stress.",
+                          style: TextStyle(fontSize: 16, color: textColor),
+                        ),
+                        SizedBox(height: 16),
+                        Text(
+                          "Vision",
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: textColor,
+                          ),
+                        ),
+                        SizedBox(height: 8),
+                        Text(
+                          "Studhome envisions becoming the go-to digital housing assistant for students, starting with ICT University and expanding to other institutions across Cameroon and Africa. By combining cutting-edge technology, local payment systems, and user-centered design, Studhome empowers students to make informed housing decisions while supporting landlords in reaching their audience.",
+                          style: TextStyle(fontSize: 16, color: textColor),
+                        ),
+                        SizedBox(height: 16),
+                        Text(
+                          "✨ With Studhome, finding a home near ICT University becomes simpler, smarter, and stress-free.",
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: textColor,
+                            fontStyle: FontStyle.italic,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],
               ),
 
-              // Contact info (outside dropdown)
               const SizedBox(height: 15),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -427,7 +487,6 @@ class _SettingState extends State<Setting> {
 
               ElevatedButton(
                 onPressed: () async {
-                  // Clear stored tokens on logout
                   SharedPreferences prefs =
                       await SharedPreferences.getInstance();
                   await prefs.remove('access_token');

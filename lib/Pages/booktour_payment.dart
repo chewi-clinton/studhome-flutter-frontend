@@ -125,9 +125,16 @@ class _BookTourPaymentState extends State<BookTourPayment> {
         }
       }
 
-      if (response.statusCode == 201) {
+      if (response.statusCode == 200 || response.statusCode == 201) {
         final data = jsonDecode(response.body);
         final reference = data['reference'];
+        if (reference == null) {
+          setState(() {
+            _errorMessage = 'Failed to initiate payment: No reference returned';
+            _isLoading = false;
+          });
+          return;
+        }
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Please complete payment via mobile money'),
@@ -135,8 +142,10 @@ class _BookTourPaymentState extends State<BookTourPayment> {
         );
         await _verifyPayment(reference);
       } else {
+        final data = jsonDecode(response.body);
         setState(() {
-          _errorMessage = 'Failed to initiate payment: ${response.statusCode}';
+          _errorMessage =
+              'Failed to initiate payment: ${data['error'] ?? response.statusCode}';
           _isLoading = false;
         });
       }
@@ -195,7 +204,7 @@ class _BookTourPaymentState extends State<BookTourPayment> {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Payment successful! Tour booked.')),
           );
-          Navigator.popUntil(context, (route) => route.isFirst);
+          Navigator.pushNamedAndRemoveUntil(context, '/home', (route) => false);
         } else {
           setState(() {
             _errorMessage = 'Payment not completed. Status: ${data['status']}';
@@ -203,8 +212,10 @@ class _BookTourPaymentState extends State<BookTourPayment> {
           });
         }
       } else {
+        final data = jsonDecode(response.body);
         setState(() {
-          _errorMessage = 'Failed to verify payment: ${response.statusCode}';
+          _errorMessage =
+              'Failed to verify payment: ${data['error'] ?? response.statusCode}';
           _isLoading = false;
         });
       }

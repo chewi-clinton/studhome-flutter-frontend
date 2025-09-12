@@ -5,7 +5,6 @@ import 'package:studhome/Pages/home_detail.dart';
 import 'package:studhome/Pages/notificationpage.dart';
 import 'dart:convert';
 import 'dart:math' show cos, sqrt, asin, sin;
-
 import 'package:studhome/constants/backend_url.dart';
 
 class Homepage extends StatefulWidget {
@@ -19,6 +18,7 @@ class _HomepageState extends State<Homepage> {
   List<Map<String, dynamic>> houses = [];
   bool _isLoading = true;
   String? _errorMessage;
+  String? selectedCategory;
 
   final double schoolLat = 3.949730;
   final double schoolLng = 11.514695;
@@ -54,7 +54,7 @@ class _HomepageState extends State<Homepage> {
     }
   }
 
-  Future<void> _fetchHouses() async {
+  Future<void> _fetchHouses({String? roomType}) async {
     setState(() {
       _isLoading = true;
       _errorMessage = null;
@@ -71,7 +71,9 @@ class _HomepageState extends State<Homepage> {
       return;
     }
 
-    final url = Uri.parse('${Constants.baseUrl}/api/houses/');
+    final url = roomType != null && roomType.isNotEmpty
+        ? Uri.parse('${Constants.baseUrl}/api/houses/?room_type=$roomType')
+        : Uri.parse('${Constants.baseUrl}/api/houses/');
 
     try {
       var response = await http
@@ -280,6 +282,13 @@ class _HomepageState extends State<Homepage> {
     return degrees * (3.141592653589793 / 180);
   }
 
+  void _onCategorySelected(String? category) {
+    setState(() {
+      selectedCategory = category;
+    });
+    _fetchHouses(roomType: category);
+  }
+
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
@@ -358,6 +367,7 @@ class _HomepageState extends State<Homepage> {
                         screenWidth,
                         screenHeight,
                         primaryColor,
+                        '',
                       ),
                       SizedBox(width: screenWidth * 0.03),
                       _buildCategoryButton(
@@ -365,6 +375,7 @@ class _HomepageState extends State<Homepage> {
                         screenWidth,
                         screenHeight,
                         primaryColor,
+                        'single',
                       ),
                       SizedBox(width: screenWidth * 0.03),
                       _buildCategoryButton(
@@ -372,6 +383,7 @@ class _HomepageState extends State<Homepage> {
                         screenWidth,
                         screenHeight,
                         primaryColor,
+                        'double',
                       ),
                       SizedBox(width: screenWidth * 0.03),
                       _buildCategoryButton(
@@ -379,13 +391,7 @@ class _HomepageState extends State<Homepage> {
                         screenWidth,
                         screenHeight,
                         primaryColor,
-                      ),
-                      SizedBox(width: screenWidth * 0.03),
-                      _buildCategoryButton(
-                        "Studio",
-                        screenWidth,
-                        screenHeight,
-                        primaryColor,
+                        'apartment',
                       ),
                     ],
                   ),
@@ -490,21 +496,28 @@ class _HomepageState extends State<Homepage> {
     double screenWidth,
     double screenHeight,
     Color primaryColor,
+    String categoryValue,
   ) {
-    return Container(
-      padding: EdgeInsets.symmetric(
-        horizontal: screenWidth * 0.06,
-        vertical: screenHeight * 0.015,
-      ),
-      decoration: BoxDecoration(
-        color: primaryColor,
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Text(
-        label,
-        style: const TextStyle(
-          fontWeight: FontWeight.w600,
-          color: Colors.white,
+    final isSelected = selectedCategory == categoryValue;
+    return GestureDetector(
+      onTap: () => _onCategorySelected(categoryValue),
+      child: Container(
+        padding: EdgeInsets.symmetric(
+          horizontal: screenWidth * 0.06,
+          vertical: screenHeight * 0.015,
+        ),
+        decoration: BoxDecoration(
+          color: isSelected ? primaryColor : Theme.of(context).cardColor,
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontWeight: FontWeight.w600,
+            color: isSelected
+                ? Colors.white
+                : Theme.of(context).textTheme.bodyLarge!.color,
+          ),
         ),
       ),
     );
